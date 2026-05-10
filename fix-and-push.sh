@@ -1,27 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "🔧 开始全面修复..."
+echo "🔧 彻底清理 Tailwind 并推送..."
 cd "$(dirname "$0")"
 
-# 1. 删除所有可能冲突的文件
-echo "🧹 清理冲突文件..."
-rm -f tailwind.config.js postcss.config.js tailwind.config.ts postcss.config.ts
-rm -f src/app/layout.tsx src/app/page.tsx
-rm -f src/app/components/TodoList.tsx
+# 删除所有 tailwind 相关文件
+rm -f postcss.config.js postcss.config.ts
+rm -f tailwind.config.js tailwind.config.ts
 
-# 2. 确保 .gitignore 正确
-cat > .gitignore << 'EOF'
-node_modules/
-.next/
-dist/
-.env
-.env.local
-*.log
-.DS_Store
-EOF
-
-# 3. 重写 package.json（无 Tailwind）
+# 确保 package.json 没有 tailwind
 cat > package.json << 'EOF'
 {
   "name": "todo-app",
@@ -41,45 +28,7 @@ cat > package.json << 'EOF'
 }
 EOF
 
-# 4. 重写 next.config.js
-cat > next.config.js << 'EOF'
-/** @type {import('next').NextConfig} */
-const nextConfig = {}
-module.exports = nextConfig
-EOF
-
-# 5. 重写 layout.js
-cat > src/app/layout.js << 'EOF'
-import './globals.css'
-
-export const metadata = {
-  title: 'Todo List',
-  description: '待办清单',
-}
-
-export default function RootLayout({ children }) {
-  return (
-    <html lang="zh-CN">
-      <body>{children}</body>
-    </html>
-  )
-}
-EOF
-
-# 6. 重写 page.js
-cat > src/app/page.js << 'EOF'
-import TodoList from './components/TodoList'
-
-export default function Home() {
-  return (
-    <main>
-      <TodoList />
-    </main>
-  )
-}
-EOF
-
-# 7. 重写 globals.css
+# 确保 globals.css 没有 @tailwind
 cat > src/app/globals.css << 'EOF'
 * {
   box-sizing: border-box;
@@ -98,24 +47,14 @@ body {
 }
 EOF
 
-# 8. 确保 supabase.js 存在
-mkdir -p src/lib
-cat > src/lib/supabase.js << 'EOF'
-import { createClient } from '@supabase/supabase-js'
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseKey)
-EOF
-
-# 9. 提交并推送
-echo "📤 提交并推送..."
+# 提交并推送
 git add .
-git commit -m "fix: complete rebuild - remove tailwind and tsx conflicts" || true
+git commit -m "fix: completely remove tailwind and postcss config" || true
+
+# 如果 GitHub 上还有旧文件，强制删除
+git rm -f postcss.config.js tailwind.config.js 2>/dev/null || true
+git commit -m "fix: remove tailwind files from git" || true
+
 git push
 
-echo "✅ 修复完成！"
-echo "📍 请回到 Vercel 查看构建状态"
-echo ""
-echo "如果仍然失败，请截图 Build Logs 的完整错误信息"
+echo "✅ 清理完成！请回到 Vercel 查看构建状态"
