@@ -1,22 +1,25 @@
 #!/bin/bash
 set -e
 
-echo "🔧 强制删除 tsconfig.json 和 TypeScript 文件..."
+echo "🔧 修复 React/SWC 兼容性问题..."
 cd "$(dirname "$0")"
 
-# 删除本地 tsconfig.json（如果存在）
-rm -f tsconfig.json
+# 更新 next.config.js
+cat > next.config.js << 'EOF'
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  swcMinify: false,
+  experimental: {
+    forceSwcTransforms: true
+  }
+}
 
-# 删除所有 .tsx 文件
-find src -name "*.tsx" -type f -delete 2>/dev/null || true
-
-# 从 git 仓库中强制删除
-git rm -f tsconfig.json 2>/dev/null || true
+module.exports = nextConfig
+EOF
 
 git add .
-git commit -m "fix: remove tsconfig.json and all TypeScript files" || true
-
+git commit -m "fix: disable swcMinify to resolve React compatibility" || true
 git push
 
-echo "✅ 已强制删除 tsconfig.json"
-echo "📍 请回到 Vercel 点击 Redeploy（不勾选缓存）"
+echo "✅ 推送完成！"
+echo "📍 请回到 Vercel 查看构建状态"
