@@ -138,3 +138,103 @@
   padding: 40px 20px;
   color: #6b7280;
 }
+
+/* ========== 分类功能样式 ========== */
+
+/* 分类选择下拉框 */
+.categorySelect {
+  padding: 12px 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 90px;
+}
+
+.categorySelect:focus {
+  border-color: #4f46e5;
+}
+
+/* 筛选栏 */
+.filterBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  padding: 4px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+/* 筛选按钮 */
+.filterButton {
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.filterButton:hover {
+  border-color: #d1d5db;
+  background: #f3f4f6;
+}
+
+/* 激活状态的筛选按钮 */
+.filterActive {
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* 分类徽章 */
+.categoryBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+
+/* 任务内容区域 */
+.todoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+/* 分类统计 */
+.categoryStats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid #f3f4f6;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.statLabel {
+  opacity: 0.8;
+}
+
+.statCount {
+  font-weight: 600;
+  opacity: 1;
+}

@@ -4,9 +4,21 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
 import styles from "./TodoList.module.css";
 
+const CATEGORIES = [
+  { id: "工作", label: "💼 工作", color: "#ef4444" },
+  { id: "学习", label: "📚 学习", color: "#3b82f6" },
+  { id: "生活", label: "🏠 生活", color: "#10b981" },
+  { id: "健康", label: "💪 健康", color: "#f59e0b" },
+  { id: "其他", label: "📌 其他", color: "#6b7280" },
+];
+
+const DEFAULT_CATEGORY = "其他";
+
 export default function TodoList() {
   const [todos, setTodos] = useState([]);
   const [input, setInput] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("全部");
+  const [newCategory, setNewCategory] = useState(DEFAULT_CATEGORY);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -46,6 +58,7 @@ export default function TodoList() {
           {
             title: input.trim(),
             completed: false,
+            category: newCategory,
           },
         ])
         .select()
@@ -54,6 +67,7 @@ export default function TodoList() {
       if (error) throw error;
       setTodos((prev) => [data, ...prev]);
       setInput("");
+      setNewCategory(DEFAULT_CATEGORY);
     } catch (err) {
       console.error("添加任务失败:", err);
       setError("添加任务失败");
@@ -93,7 +107,31 @@ export default function TodoList() {
     }
   };
 
+  // 筛选任务
+  const filteredTodos =
+    selectedCategory === "全部"
+      ? todos
+      : todos.filter((t) => t.category === selectedCategory);
+
+  // 统计
   const completedCount = todos.filter((t) => t.completed).length;
+  const categoryStats = CATEGORIES.map((cat) => ({
+    ...cat,
+    total: todos.filter((t) => t.category === cat.id).length,
+    done: todos.filter((t) => t.category === cat.id && t.completed).length,
+  }));
+
+  const getCategoryBadge = (categoryId) => {
+    const cat = CATEGORIES.find((c) => c.id === categoryId) || CATEGORIES[4];
+    return (
+      <span
+        className={styles.categoryBadge}
+        style={{ backgroundColor: cat.color + "20", color: cat.color, borderColor: cat.color + "40" }}
+      >
+        {cat.label}
+      </span>
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -107,6 +145,18 @@ export default function TodoList() {
           placeholder="输入新任务..."
           className={styles.input}
         />
+        <select
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+          className={styles.categorySelect}
+          title="选择分类"
+        >
+          {CATEGORIES.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.label}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           className={styles.addButton}
@@ -127,13 +177,60 @@ export default function TodoList() {
         {todos.length - completedCount}
       </div>
 
+      <div className={styles.categoryStats}>
+        {categoryStats.map((cat) => (
+          <div
+            key={cat.id}
+            className={styles.statItem}
+            style={{ color: cat.color }}
+          >
+            <span className={styles.statLabel}>{cat.label}</span>
+            <span className={styles.statCount}>
+              {cat.done}/{cat.total}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* 筛选栏 */}
+      <div className={styles.filterBar}>
+        <button
+          className={`${styles.filterButton} ${
+            selectedCategory === "全部" ? styles.filterActive : ""
+          }`}
+          onClick={() => setSelectedCategory("全部")}
+        >
+          全部
+        </button>
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.id}
+            className={`${styles.filterButton} ${
+              selectedCategory === cat.id ? styles.filterActive : ""
+            }`}
+            onClick={() => setSelectedCategory(cat.id)}
+            style={
+              selectedCategory === cat.id
+                ? { backgroundColor: cat.color, color: "#fff" }
+                : {}
+            }
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className={styles.loading}>加载中...</div>
-      ) : todos.length === 0 ? (
-        <div className={styles.empty}>暂无任务，添加一个吧！</div>
+      ) : filteredTodos.length === 0 ? (
+        <div className={styles.empty}>
+          {selectedCategory === "全部"
+            ? "暂无任务，添加一个吧！"
+            : `「${selectedCategory}」分类暂无任务`}
+        </div>
       ) : (
         <ul className={styles.list}>
-          {todos.map((todo) => (
+          {filteredTodos.map((todo) => (
             <li
               key={todo.id}
               className={`${styles.item} ${
@@ -147,7 +244,10 @@ export default function TodoList() {
                   onChange={() => toggleTodo(todo.id, todo.completed)}
                   className={styles.checkbox}
                 />
-                <span className={styles.text}>{todo.title}</span>
+                <div className={styles.todoContent}>
+                  <span className={styles.text}>{todo.title}</span>
+                  {getCategoryBadge(todo.category)}
+                </div>
               </label>
               <button
                 onClick={() => deleteTodo(todo.id)}
